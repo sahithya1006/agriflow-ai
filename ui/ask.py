@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -145,7 +146,7 @@ if st.button("🔍 Get advice"):
         st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running AI..."):
-            result = {
+            result: dict[str, Any] = {
                 "crop": crop,
                 "disease": "Early Blight",
                 "severity": "High",
@@ -155,22 +156,27 @@ if st.button("🔍 Get advice"):
                 "confidence": 0.87,
             }
 
+        disease = str(result["disease"])
+        confidence = float(result["confidence"])
+        severity = str(result["severity"])
+        recommendation = str(result["recommendation"])
+
         st.markdown("### Result")
         col1, col2 = st.columns(2)
-        col1.metric("Disease", result["disease"])
-        col2.metric("Confidence", f"{result['confidence'] * 100:.0f}%")
-        st.error(f"Severity: {result['severity']}")
-        st.success(f"Recommendation: {result['recommendation']}")
+        col1.metric("Disease", disease)
+        col2.metric("Confidence", f"{confidence * 100:.0f}%")
+        st.error(f"Severity: {severity}")
+        st.success(f"Recommendation: {recommendation}")
         st.json(result)
 
         if st.button("Save to history"):
             save_prediction(
                 input_type="voice",
-                crop=result["crop"],
-                disease=result["disease"],
-                severity=result["severity"],
-                recommendation=result["recommendation"],
-                confidence=result["confidence"],
+                crop=str(result["crop"]),
+                disease=disease,
+                severity=severity,
+                recommendation=recommendation,
+                confidence=confidence,
                 raw_json=json.dumps(result),
             )
             st.success("Saved.")
