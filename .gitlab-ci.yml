@@ -1,88 +1,87 @@
-# .gitlab-ci.yml
 # CI/CD pipeline for AgriFlow AI
-# 12 individual checks — Windows shell runner
 
 stages:
-  - checks
+  - lint
+  - format
+  - type_check
+  - test
+  - coverage
+  - security
+  - audit
 
 variables:
-  PYTHON: "C:\\Users\\sahit\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-ruff-lint:
-  stage: checks
-  script:
-    - '$env:PYTHON -m pip install ruff --quiet'
-    - '$env:PYTHON -m ruff check .'
-  allow_failure: false
+default:
+  image: python:3.12-slim
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install -r requirements.txt
 
-ruff-format:
-  stage: checks
-  script:
-    - '$env:PYTHON -m pip install ruff --quiet'
-    - '$env:PYTHON -m ruff format --check .'
-  allow_failure: false
+cache:
+  paths:
+    - .cache/pip
 
-mypy-check:
-  stage: checks
+lint:
+  stage: lint
   script:
-    - '$env:PYTHON -m pip install mypy --quiet'
-    - '$env:PYTHON -m mypy ui/ database/ --ignore-missing-imports'
+    - python -m ruff check .
+    - python -m flake8 ai database ui tests app.py
+    - python -m pylint ai database ui app.py --fail-under=6.0
+
+format:
+  stage: format
+  script:
+    - python -m ruff format --check .
+    - python -m pyupgrade --py311-plus app.py ai/*.py database/*.py ui/*.py tests/*.py
+
+type_check:
+  stage: type_check
+  script:
+    - python -m mypy ai database ui --ignore-missing-imports
+
+test:
+  stage: test
+  script:
+    - python -m pytest tests/ -v --tb=short
+
+coverage:
+  stage: coverage
+  script:
+    - python -m pytest --cov=ai --cov=database --cov-report=term-missing --cov-report=xml --cov-fail-under=40
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+bandit:
+  stage: security
+  script:
+    - python -m bandit -r ai database ui app.py -ll
+
+semgrep:
+  stage: security
+  script:
+    - python -m semgrep --config auto --error --metrics=off ai database ui app.py
   allow_failure: true
 
-bandit-scan:
-  stage: checks
+gitleaks-secret-scan:
+  stage: security
   script:
-    - '$env:PYTHON -m pip install bandit --quiet'
-    - '$env:PYTHON -m bandit -r . -ll --exclude .venv,tests'
-  allow_failure: false
+    - python -m detect_secrets scan --all-files --exclude-files '(^\.git/|.*\.pkl$|.*\.db$)' > .secrets.baseline
+    - python -m detect_secrets audit .secrets.baseline --report
 
-pip-audit:
-  stage: checks
+dependency-audit:
+  stage: audit
   script:
-    - '$env:PYTHON -m pip install pip-audit --quiet'
-    - '$env:PYTHON -m pip_audit'
+    - python -m pip_audit -r requirements.txt
   allow_failure: true
 
-license-check:
-  stage: checks
+vulture:
+  stage: lint
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''LICENSE''), ''LICENSE missing''; print(''LICENSE found'')"'
-  allow_failure: false
-
-readme-check:
-  stage: checks
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''README.md''), ''README.md missing''; print(''README found'')"'
-  allow_failure: false
-
-contributing-check:
-  stage: checks
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''CONTRIBUTING.md''), ''CONTRIBUTING.md missing''; print(''CONTRIBUTING found'')"'
-  allow_failure: false
-
-changelog-check:
-  stage: checks
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''CHANGELOG.md''), ''CHANGELOG.md missing''; print(''CHANGELOG found'')"'
-  allow_failure: false
-
-security-doc-check:
-  stage: checks
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''SECURITY.md''), ''SECURITY.md missing''; print(''SECURITY found'')"'
-  allow_failure: false
-
-spec-check:
-  stage: checks
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''SPEC.md''), ''SPEC.md missing''; print(''SPEC found'')"'
-  allow_failure: false
-
-# Check 12 — Run unit tests
-unit-tests:
-  stage: checks
-  script:
-    - '$env:PYTHON -m pip install pytest pandas scikit-learn pillow joblib --quiet'
-    - '$env:PYTHON -m pytest tests/ -v --tb=short'
-  allow_failure: false
+    - python -m vulture ai database ui app.py --min-confidence 90
+  allow_failure: true

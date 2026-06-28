@@ -1,8 +1,10 @@
-import streamlit as st
 import json
+
+import streamlit as st
+
 from database.db import save_prediction
 
-st.title("❓ Ask a Question")
+st.title("Ask a Question")
 st.caption("Type your farming problem in any language")
 
 crop = st.selectbox(
@@ -15,14 +17,11 @@ symptoms = st.text_area(
     placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
 )
 
-if st.button("🔍 Get advice"):
+if st.button("Get advice"):
     if not symptoms:
         st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running offline AI..."):
-            # Replace this with Member 1's actual function once ready:
-            # from ai.disease_model import predict_disease
-            # result = predict_disease(crop=crop, symptoms=symptoms)
             from ai.disease_model import predict_disease
             from ai.text_classifier import classify_query
 
@@ -40,7 +39,7 @@ if st.button("🔍 Get advice"):
         st.success(f"Recommendation: {result['recommendation']}")
         st.json(result)
 
-        if st.button("💾 Save to history"):
+        if st.button("Save to history"):
             save_prediction(
                 input_type="text",
                 crop=result["crop"],
