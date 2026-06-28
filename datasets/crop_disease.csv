@@ -1,0 +1,11 @@
+crop,symptom,season,soil_type,disease,severity,recommendation
+Tomato,Yellow Spots,Kharif,Red Soil,Early Blight,High,Apply Copper Fungicide
+Tomato,Brown Leaves,Kharif,Red Soil,Late Blight,High,Apply Mancozeb
+Rice,Brown Spots,Kharif,Clay Soil,Leaf Blast,High,Use Tricyclazole
+Rice,Yellow Leaves,Rabi,Clay Soil,Bacterial Leaf Blight,Medium,Use Copper Oxychloride
+Cotton,White Insects,Kharif,Black Soil,Aphids,Medium,Apply Neem Oil
+Cotton,Curled Leaves,Kharif,Black Soil,Whitefly,High,Use Imidacloprid
+Maize,Yellow Leaves,Rabi,Loamy Soil,Nitrogen Deficiency,Medium,Apply Urea
+Wheat,Rust Spots,Rabi,Loamy Soil,Leaf Rust,High,Apply Propiconazole
+Chilli,Leaf Curl,Kharif,Sandy Soil,Leaf Curl Virus,High,Remove Infected Plants
+Potato,Dark Spots,Rabi,Loamy Soil,Early Blight,High,Apply Chlorothalonil
