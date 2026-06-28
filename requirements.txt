@@ -5,5 +5,4 @@ joblib
 Pillow
 pytesseract
 SpeechRecognition
-pyaudio
 pytest
