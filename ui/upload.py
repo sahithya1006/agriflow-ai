@@ -1,12 +1,13 @@
+import json
 import os
 import tempfile
-import json
 from pathlib import Path
 
 import streamlit as st
+
 from database.db import save_prediction
 
-st.title("📷 Upload Image")
+st.title("Upload Image")
 st.caption("Upload a crop photo or fertilizer bill")
 
 uploaded = st.file_uploader("Choose a file", type=["jpg", "jpeg", "png", "pdf"])
@@ -16,10 +17,9 @@ if uploaded:
         st.image(uploaded, caption="Uploaded image", use_container_width=True)
 
     with st.spinner("Running OCR and disease detection..."):
-        from ai.ocr import extract_text
         from ai.disease_model import predict_disease
+        from ai.ocr import extract_text
 
-        # Save uploaded file to temp path so OCR can read it
         suffix = Path(uploaded.name).suffix
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp.write(uploaded.read())
@@ -47,7 +47,7 @@ if uploaded:
     st.success(f"Recommendation: {result['recommendation']}")
     st.json(result)
 
-    if st.button("💾 Save to history"):
+    if st.button("Save to history"):
         save_prediction(
             input_type="image",
             crop=result["crop"],

@@ -1,5 +1,6 @@
 import sqlite3
-from database.db import init_db, get_connection, save_prediction, get_all_predictions
+
+from database.db import get_all_predictions, get_connection, init_db, save_prediction
 
 
 def test_tables_exist():
