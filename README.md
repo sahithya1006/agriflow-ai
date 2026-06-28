@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # agriflow-ai
 
 Offline-first AI assistant for farmers. The app runs locally on CPU, stores data in SQLite, and avoids cloud dependencies so it can be used in low-connectivity field settings.
@@ -214,4 +214,4 @@ This app works with WiFi completely turned off:
 This project is licensed under the **GNU General Public License v3.0**
 
 See the [LICENSE](LICENSE) file for details.
->>>>>>> origin/main
+
