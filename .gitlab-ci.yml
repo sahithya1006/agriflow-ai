@@ -1,93 +1,88 @@
+# .gitlab-ci.yml
+# CI/CD pipeline for AgriFlow AI
+# 12 individual checks — Windows shell runner
+
 stages:
-  - lint
-  - security
-  - audit
-  - test
+  - checks
 
 variables:
-  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
-
-before_script:
-  - '& "$env:PYTHON_EXE" --version'
-  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
-  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
-  - '& "$env:PYTHON_EXE" -m pip install ruff mypy bandit pip-audit pytest'
-
-# --------------------
-# LINT
-# --------------------
+  PYTHON: "C:\\Users\\sahit\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
 
 ruff-lint:
-  stage: lint
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m ruff check .'
+    - '$env:PYTHON -m pip install ruff --quiet'
+    - '$env:PYTHON -m ruff check .'
+  allow_failure: false
 
 ruff-format:
-  stage: lint
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m ruff format --check .'
+    - '$env:PYTHON -m pip install ruff --quiet'
+    - '$env:PYTHON -m ruff format --check .'
+  allow_failure: false
 
 mypy-check:
-  stage: lint
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m mypy ai tests --ignore-missing-imports'
+    - '$env:PYTHON -m pip install mypy --quiet'
+    - '$env:PYTHON -m mypy ui/ database/ --ignore-missing-imports'
   allow_failure: true
 
-# --------------------
-# SECURITY
-# --------------------
-
 bandit-scan:
-  stage: security
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m bandit -r ai'
+    - '$env:PYTHON -m pip install bandit --quiet'
+    - '$env:PYTHON -m bandit -r . -ll --exclude .venv,tests'
   allow_failure: false
 
 pip-audit:
-  stage: security
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m pip_audit -r requirements.txt'
+    - '$env:PYTHON -m pip install pip-audit --quiet'
+    - '$env:PYTHON -m pip_audit'
   allow_failure: true
 
-# --------------------
-# AUDIT
-# --------------------
-
 license-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''LICENSE''), ''LICENSE missing''; print(''LICENSE found'')"'
+  allow_failure: false
 
 readme-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''README.md''), ''README.md missing''; print(''README found'')"'
+  allow_failure: false
 
 contributing-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''CONTRIBUTING.md''), ''CONTRIBUTING.md missing''; print(''CONTRIBUTING found'')"'
+  allow_failure: false
 
 changelog-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''CHANGELOG.md''), ''CHANGELOG.md missing''; print(''CHANGELOG found'')"'
+  allow_failure: false
 
 security-doc-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''SECURITY.md''), ''SECURITY.md missing''; print(''SECURITY found'')"'
+  allow_failure: false
 
 spec-check:
-  stage: audit
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''SPEC OK'')"'
+    - '$env:PYTHON -c "import os; assert os.path.isfile(''SPEC.md''), ''SPEC.md missing''; print(''SPEC found'')"'
+  allow_failure: false
 
-# --------------------
-# TESTS
-# --------------------
-
+# Check 12 — Run unit tests
 unit-tests:
-  stage: test
+  stage: checks
   script:
-    - '& "$env:PYTHON_EXE" -m pytest -v'
+    - '$env:PYTHON -m pip install pytest pandas scikit-learn pillow joblib --quiet'
+    - '$env:PYTHON -m pytest tests/ -v --tb=short'
+  allow_failure: false
