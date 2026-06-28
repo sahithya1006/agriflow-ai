@@ -1,107 +1,96 @@
 # .gitlab-ci.yml
 # CI/CD pipeline for AgriFlow AI
-# 12 individual checks — Windows shell runner (no Docker)
+# 12 individual checks — Windows shell runner
 
 stages:
-  - lint
-  - security
-  - audit
-  - test
-
-# ── LINT STAGE ──────────────────────────────────────────────
+  - checks
 
 # Check 1 — Ruff lint
 ruff-lint:
-  stage: lint
+  stage: checks
   script:
-    - pip install ruff --quiet
-    - ruff check .
+    - python -m pip install ruff --quiet
+    - python -m ruff check .
   allow_failure: false
 
 # Check 2 — Ruff format
 ruff-format:
-  stage: lint
+  stage: checks
   script:
-    - pip install ruff --quiet
-    - ruff format --check .
+    - python -m pip install ruff --quiet
+    - python -m ruff format --check .
   allow_failure: false
 
 # Check 3 — MyPy type check
 mypy-check:
-  stage: lint
+  stage: checks
   script:
-    - pip install mypy --quiet
-    - mypy ui/ database/ --ignore-missing-imports
+    - python -m pip install mypy --quiet
+    - python -m mypy ui/ database/ --ignore-missing-imports
   allow_failure: true
-
-# ── SECURITY STAGE ──────────────────────────────────────────
 
 # Check 4 — Bandit security scan
 bandit-scan:
-  stage: security
+  stage: checks
   script:
-    - pip install bandit --quiet
-    - bandit -r . -ll --exclude .venv,tests
+    - python -m pip install bandit --quiet
+    - python -m bandit -r . -ll --exclude .venv,tests
   allow_failure: false
 
 # Check 5 — pip-audit vulnerability check
 pip-audit:
-  stage: security
+  stage: checks
   script:
-    - pip install pip-audit --quiet
-    - pip-audit
+    - python -m pip install pip-audit --quiet
+    - python -m pip_audit
   allow_failure: true
-
-# ── AUDIT STAGE ─────────────────────────────────────────────
 
 # Check 6 — LICENSE file exists
 license-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('LICENSE'), 'LICENSE missing'; print('LICENSE found')"
   allow_failure: false
 
 # Check 7 — README file exists
 readme-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('README.md'), 'README.md missing'; print('README found')"
   allow_failure: false
 
 # Check 8 — CONTRIBUTING file exists
 contributing-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('CONTRIBUTING.md'), 'CONTRIBUTING.md missing'; print('CONTRIBUTING found')"
   allow_failure: false
 
 # Check 9 — CHANGELOG file exists
 changelog-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('CHANGELOG.md'), 'CHANGELOG.md missing'; print('CHANGELOG found')"
   allow_failure: false
 
 # Check 10 — SECURITY file exists
 security-doc-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('SECURITY.md'), 'SECURITY.md missing'; print('SECURITY found')"
   allow_failure: false
 
 # Check 11 — SPEC file exists
 spec-check:
-  stage: audit
+  stage: checks
   script:
     - python -c "import os; assert os.path.isfile('SPEC.md'), 'SPEC.md missing'; print('SPEC found')"
   allow_failure: false
 
-# ── TEST STAGE ──────────────────────────────────────────────
-
 # Check 12 — Run unit tests
 unit-tests:
-  stage: test
+  stage: checks
   script:
-    - pip install pytest pandas scikit-learn pillow joblib --quiet
-    - pytest tests/ -v --tb=short
+    - python -m pip install pytest pandas scikit-learn pillow joblib --quiet
+    - python -m pytest tests/ -v --tb=short
   allow_failure: false
