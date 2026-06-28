@@ -13,6 +13,7 @@ variables:
   GIT_DEPTH: "1"
   GIT_STRATEGY: clone
   PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+  SEMGREP_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\semgrep.exe"
 
 before_script:
   - '& "$env:PYTHON_EXE" --version'
@@ -45,7 +46,7 @@ vulture:
 semgrep:
   stage: security
   script:
-    - '& semgrep scan --metrics=off --disable-version-check --config .semgrep.yml ai database ui app.py'
+    - '& "$env:SEMGREP_EXE" scan --metrics=off --disable-version-check --config .semgrep.yml ai database ui app.py'
   allow_failure: true
 
 bandit-scan:
