@@ -13,6 +13,8 @@ stages:
   - stage-unit-tests
 
 variables:
+  GIT_DEPTH: "1"
+  GIT_STRATEGY: clone
   PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
 
 before_script:
