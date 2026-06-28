@@ -1,0 +1,11 @@
+crop,soil_type,symptom,fertilizer,dosage
+Tomato,Red Soil,Yellow Leaves,NPK 10:26:26,40 kg/acre
+Tomato,Red Soil,Poor Growth,DAP,50 kg/acre
+Rice,Clay Soil,Yellow Leaves,Urea,45 kg/acre
+Rice,Clay Soil,Slow Growth,DAP,50 kg/acre
+Cotton,Black Soil,White Leaves,NPK 20:20:0,40 kg/acre
+Cotton,Black Soil,Poor Growth,Urea,35 kg/acre
+Maize,Loamy Soil,Yellow Leaves,Urea,50 kg/acre
+Wheat,Loamy Soil,Pale Leaves,DAP,45 kg/acre
+Chilli,Sandy Soil,Leaf Curl,NPK 19:19:19,30 kg/acre
+Potato,Loamy Soil,Weak Plants,Potash,35 kg/acre
