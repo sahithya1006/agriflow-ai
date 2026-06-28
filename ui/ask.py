@@ -1,199 +1,168 @@
+# ruff: noqa: E501
 import json
-from datetime import datetime
-from pathlib import Path
-from typing import Any
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from database.db import save_prediction
 
+try:
+    import speech_recognition as sr
 
-def save_json_output(result: dict[str, Any]) -> Path:
-    output_dir = Path("outputs")
-    output_dir.mkdir(exist_ok=True)
+    MIC_AVAILABLE = True
+except ImportError:
+    MIC_AVAILABLE = False
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    crop = str(result["crop"]).lower().replace(" ", "_")
-    file_path = output_dir / f"{crop}_{timestamp}.json"
-
-    with file_path.open("w", encoding="utf-8") as file:
-        json.dump(result, file, indent=4)
-
-    return file_path
-
-
-st.title("❓ Ask a Question")
-st.caption("Type your farming problem or use the microphone")
-
-crop = st.selectbox(
-    "Select crop",
-    [
-        "Tomato",
-        "Wheat",
-        "Rice",
-        "Cotton",
-        "Maize",
-        "Sugarcane",
-        "Chilli",
-        "Soybean",
-    ],
-)
-
-lang = st.selectbox(
-    "Select language for voice",
-    [
-        ("Telugu", "te-IN"),
-        ("Hindi", "hi-IN"),
-        ("English", "en-IN"),
-        ("Tamil", "ta-IN"),
-    ],
-    format_func=lambda x: x[0],
-)
-
-st.markdown("#### 🎙️ Voice Input")
-st.caption("Click the button, speak, then copy the text into the box below")
-
-components.html(
-    f"""
-<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;font-family:sans-serif;">
-
-<button id="micBtn" onclick="startSpeech()"
-    style="background:#2e7d32;color:white;border:none;padding:12px 24px;
-    border-radius:8px;cursor:pointer;font-size:16px;width:100%;
-    margin-bottom:8px;">
-    🎙️ Click to Speak
-</button>
-
-<div id="status"
-    style="color:#555;font-size:13px;margin-bottom:8px;min-height:20px;">
-    Press the button and speak
+st.markdown(
+    """
+<style>
+.ask-hero {
+    background: linear-gradient(135deg, #e65100, #f57c00);
+    padding: 30px;
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 24px;
+    text-align: center;
+}
+.ask-hero h2 { margin: 0; font-size: 32px; }
+.ask-hero p { margin-top: 8px; opacity: 0.9; font-size: 15px; }
+</style>
+<div class="ask-hero">
+    <div style="font-size:48px;">❓</div>
+    <h2>Ask a Question</h2>
+    <p>Describe your farming problem and get instant AI advice — 100% offline</p>
 </div>
-
-<div id="result-box"
-    style="background:#f1f8e9;border:2px solid #2e7d32;
-    border-radius:8px;padding:12px;font-size:15px;min-height:50px;
-    margin-bottom:8px;color:#1b5e20;font-weight:500;
-    word-wrap:break-word;">
-    Your speech will appear here
-</div>
-
-<div style="font-size:12px;color:#777;margin-bottom:4px;">
-    👆 Copy the text above and paste it in the box below in Streamlit
-</div>
-
-<script>
-function startSpeech() {{
-    const statusElement = document.getElementById('status');
-    const micButton = document.getElementById('micBtn');
-    const resultBox = document.getElementById('result-box');
-
-    if (!('webkitSpeechRecognition' in window)
-        && !('SpeechRecognition' in window)) {{
-        statusElement.innerText = '❌ Use Chrome browser for voice.';
-        statusElement.style.color = 'red';
-        return;
-    }}
-
-    var SpeechRecognition = window.SpeechRecognition
-        || window.webkitSpeechRecognition;
-    var recognition = new SpeechRecognition();
-
-    recognition.lang = '{lang[1]}';
-    recognition.continuous = false;
-    recognition.interimResults = true;
-
-    micButton.innerText = '🔴 Listening... Speak now';
-    micButton.style.background = '#c62828';
-    statusElement.innerText = '🎤 Listening... speak clearly';
-    statusElement.style.color = '#c62828';
-    resultBox.innerText = '...';
-
-    recognition.start();
-
-    recognition.onresult = function(event) {{
-        var interim = '';
-        var finalText = '';
-
-        for (var i = event.resultIndex; i < event.results.length; i++) {{
-            if (event.results[i].isFinal) {{
-                finalText += event.results[i][0].transcript;
-            }} else {{
-                interim += event.results[i][0].transcript;
-            }}
-        }}
-
-        resultBox.innerText = finalText || interim;
-    }};
-
-    recognition.onend = function() {{
-        micButton.innerText = '🎙️ Click to Speak again';
-        micButton.style.background = '#2e7d32';
-        statusElement.innerText = (
-            '✅ Done! Copy the text above into the box below'
-        );
-        statusElement.style.color = '#2e7d32';
-    }};
-
-    recognition.onerror = function(event) {{
-        micButton.innerText = '🎙️ Click to Speak';
-        micButton.style.background = '#2e7d32';
-        statusElement.innerText = (
-            '❌ Error: ' + event.error + '. Try again.'
-        );
-        statusElement.style.color = 'red';
-    }};
-}}
-</script>
-</body>
-</html>
 """,
-    height=220,
+    unsafe_allow_html=True,
 )
 
-symptoms = st.text_area(
-    "Type or paste your problem here",
-    placeholder="Speak using the mic above, then paste the text here",
-)
+if "voice_text" not in st.session_state:
+    st.session_state["voice_text"] = ""
 
-if st.button("🔍 Get advice"):
-    if not symptoms:
-        st.warning("Please describe your problem first.")
+col_left, col_right = st.columns([2, 1])
+
+with col_left:
+    crop = st.selectbox(
+        "🌿 Select your crop",
+        [
+            "Tomato",
+            "Wheat",
+            "Rice",
+            "Cotton",
+            "Maize",
+            "Sugarcane",
+            "Chilli",
+            "Soybean",
+        ],
+    )
+
+    language = st.selectbox(
+        "🌐 Select language for voice input",
+        [
+            ("English", "en-IN"),
+            ("Telugu (తెలుగు)", "te-IN"),
+            ("Hindi (हिंदी)", "hi-IN"),
+            ("Tamil (தமிழ்)", "ta-IN"),
+            ("Kannada (ಕನ್ನಡ)", "kn-IN"),
+        ],
+        format_func=lambda x: x[0],
+    )
+    lang_code = language[1]
+
+    symptoms = st.text_area(
+        "📝 Describe your problem",
+        value=st.session_state["voice_text"],
+        placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
+        height=120,
+    )
+
+    mic_col, btn_col = st.columns([1, 3])
+    with mic_col:
+        mic_clicked = st.button("🎤 Speak", use_container_width=True)
+    with btn_col:
+        get_advice = st.button(
+            "🔍 Get Advice", use_container_width=True, type="primary"
+        )
+
+    if mic_clicked:
+        if not MIC_AVAILABLE:
+            st.error("Run: pip install SpeechRecognition pyaudio")
+        else:
+            recognizer = sr.Recognizer()
+            with sr.Microphone() as source:
+                with st.spinner(f"🎙️ Listening in {language[0]}... Speak now!"):
+                    recognizer.adjust_for_ambient_noise(source, duration=1)
+                    try:
+                        audio = recognizer.listen(source, timeout=6)
+                        text = recognizer.recognize_google(audio, language=lang_code)
+                        st.session_state["voice_text"] = text
+                        st.success(f"✅ Heard: {text}")
+                        st.rerun()
+                    except sr.WaitTimeoutError:
+                        st.warning("⏱️ No speech detected. Try again.")
+                    except sr.UnknownValueError:
+                        st.warning("❓ Could not understand. Speak clearly.")
+                    except Exception as e:
+                        st.error(f"Mic error: {e}")
+
+with col_right:
+    st.markdown("#### 💡 Example Questions")
+    examples = [
+        "My tomato leaves have yellow spots",
+        "Rice has brown patches on leaves",
+        "Cotton plant has white insects",
+        "Which fertilizer for wheat?",
+        "When to water sugarcane?",
+    ]
+    for ex in examples:
+        if st.button(ex, use_container_width=True, key=ex):
+            st.session_state["voice_text"] = ex
+            st.rerun()
+
+if get_advice and symptoms:
+    with st.spinner("🤖 Running offline AI..."):
+        from ai.disease_model import predict_disease
+        from ai.text_classifier import classify_query
+
+        category = classify_query(symptoms)["category"]
+        result = predict_disease(
+            crop=crop, symptom=symptoms, season="Kharif", soil_type="Red Soil"
+        )
+        result["category"] = category
+
+    st.session_state["last_result"] = result
+    st.session_state["voice_text"] = ""
+
+if "last_result" in st.session_state:
+    result = st.session_state["last_result"]
+    st.markdown("---")
+    st.markdown("### 🧪 Analysis Result")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🦠 Disease", result["disease"])
+    col2.metric("📊 Confidence", f"{result['confidence']*100:.0f}%")
+    col3.metric("🏷️ Category", result.get("category", "Disease"))
+
+    if result.get("severity") == "High":
+        st.error(f"⚠️ Severity: {result['severity']}")
+    elif result.get("severity") == "Medium":
+        st.warning(f"⚠️ Severity: {result['severity']}")
     else:
-        with st.spinner("Running AI..."):
-            result: dict[str, Any] = {
-                "crop": crop,
-                "disease": "Early Blight",
-                "severity": "High",
-                "recommendation": (
-                    "Apply Copper Fungicide at 2g per litre every 7 days"
-                ),
-                "confidence": 0.87,
-            }
+        st.info(f"✅ Severity: {result.get('severity', 'Low')}")
 
-        disease = str(result["disease"])
-        confidence = float(result["confidence"])
-        severity = str(result["severity"])
-        recommendation = str(result["recommendation"])
+    st.success(f"💊 Recommendation: {result['recommendation']}")
 
-        st.markdown("### Result")
-        col1, col2 = st.columns(2)
-        col1.metric("Disease", disease)
-        col2.metric("Confidence", f"{confidence * 100:.0f}%")
-        st.error(f"Severity: {severity}")
-        st.success(f"Recommendation: {recommendation}")
+    with st.expander("📋 View full JSON output"):
         st.json(result)
 
-        if st.button("Save to history"):
-            save_prediction(
-                input_type="voice",
-                crop=str(result["crop"]),
-                disease=disease,
-                severity=severity,
-                recommendation=recommendation,
-                confidence=confidence,
-                raw_json=json.dumps(result),
-            )
-            st.success("Saved.")
+    if st.button("💾 Save to history", use_container_width=True):
+        save_prediction(
+            input_type="text",
+            crop=crop,
+            disease=result["disease"],
+            severity=result["severity"],
+            recommendation=result["recommendation"],
+            confidence=result["confidence"],
+            raw_json=json.dumps(result),
+        )
+        st.success("✅ Saved to history!")
+        del st.session_state["last_result"]
