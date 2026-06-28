@@ -139,7 +139,7 @@ if "last_result" in st.session_state:
 
     col1, col2, col3 = st.columns(3)
     col1.metric("🦠 Disease", result["disease"])
-    col2.metric("📊 Confidence", f"{result['confidence']*100:.0f}%")
+    col2.metric("📊 Confidence", f"{result['confidence'] * 100:.0f}%")
     col3.metric("🏷️ Category", result.get("category", "Disease"))
 
     if result.get("severity") == "High":

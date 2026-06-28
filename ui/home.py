@@ -1,7 +1,8 @@
 # ruff: noqa: E501
 import streamlit as st
 
-st.markdown("""
+st.markdown(
+    """
 <style>
 .hero {
     background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%);
@@ -85,31 +86,42 @@ st.markdown("""
     <p>Your offline AI assistant for smarter farming decisions</p>
     <div class="offline-badge">✅ 100% Offline &nbsp;·&nbsp; CPU Only &nbsp;·&nbsp; No Internet Needed</div>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 st.markdown("### 📊 At a Glance")
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="stat-box">
         <div class="stat-num">🤖 4</div>
         <div class="stat-label">AI Models Running on CPU</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 with col2:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="stat-box">
         <div class="stat-num">🌐 4</div>
         <div class="stat-label">Languages Supported</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 with col3:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="stat-box">
         <div class="stat-num">🌱 15+</div>
         <div class="stat-label">Crops Covered</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 🚀 What can AgriFlow AI do?")
@@ -123,24 +135,30 @@ features = [
 ]
 for col, (icon, title, desc) in zip([col1, col2, col3, col4], features, strict=False):
     with col:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="feature-card">
             <div class="feature-icon">{icon}</div>
             <div class="feature-title">{title}</div>
             <div class="feature-desc">{desc}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 🌍 Supported Languages")
-st.markdown("""
+st.markdown(
+    """
 <div>
     <span class="lang-pill">🇮🇳 Telugu</span>
     <span class="lang-pill">🇮🇳 Hindi</span>
     <span class="lang-pill">🇮🇳 Tamil</span>
     <span class="lang-pill">🌐 English</span>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 📋 How to Use")
@@ -154,15 +172,22 @@ steps = [
 ]
 for col, (num, title, desc) in zip([col1, col2, col3, col4], steps, strict=False):
     with col:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="step-card">
             <div class="step-num">{num}</div>
             <div style="font-size:24px;margin-bottom:6px;">{title.split()[0]}</div>
             <div style="font-size:14px;font-weight:600;color:#1b5e20;">{" ".join(title.split()[1:])}</div>
             <div style="font-size:12px;color:#666;margin-top:4px;">{desc}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.success("🔒 **Privacy First** — All your farm data stays on your device. Nothing is sent to the cloud.")
-st.info("💡 **Tip** — Use Chrome browser for the best voice input experience in the Ask Question page.")
+st.success(
+    "🔒 **Privacy First** — All your farm data stays on your device. Nothing is sent to the cloud."
+)
+st.info(
+    "💡 **Tip** — Use Chrome browser for the best voice input experience in the Ask Question page."
+)

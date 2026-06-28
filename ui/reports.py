@@ -33,7 +33,7 @@ else:
     col1, col2, col3 = st.columns(3)
     col1.metric("📋 Total Predictions", len(df))
     col2.metric("🌿 Crops Analyzed", df["Crop"].nunique())
-    col3.metric("📊 Avg Confidence", f"{df['Confidence'].mean()*100:.0f}%")
+    col3.metric("📊 Avg Confidence", f"{df['Confidence'].mean() * 100:.0f}%")
 
     col4, col5, col6 = st.columns(3)
     col4.metric("🦠 Most Common Disease", df["Disease"].mode()[0])
@@ -85,7 +85,7 @@ else:
             summary_lines.append(f"Disease: {row['Disease']}")
             summary_lines.append(f"Severity: {row['Severity']}")
             summary_lines.append(f"Recommendation: {row['Recommendation']}")
-            summary_lines.append(f"Confidence: {row['Confidence']*100:.0f}%")
+            summary_lines.append(f"Confidence: {row['Confidence'] * 100:.0f}%")
             summary_lines.append("-" * 40)
         st.download_button(
             label="⬇️ Download TXT",
@@ -116,7 +116,9 @@ else:
             "Confidence",
         ]
     ].copy()
-    display_df["Confidence"] = display_df["Confidence"].apply(lambda x: f"{x*100:.0f}%")
+    display_df["Confidence"] = display_df["Confidence"].apply(
+        lambda x: f"{x * 100:.0f}%"
+    )
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
     st.markdown("---")
