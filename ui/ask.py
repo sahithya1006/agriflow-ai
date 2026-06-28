@@ -1,5 +1,7 @@
 import json
+
 import streamlit as st
+
 from database.db import save_prediction
 
 st.title("❓ Ask a Question")
@@ -7,10 +9,18 @@ st.caption("Type your farming problem or use the microphone")
 
 crop = st.selectbox(
     "Select crop",
-    ["Tomato", "Wheat", "Rice", "Cotton", "Maize", "Sugarcane", "Chilli", "Soybean"],
+    [
+        "Tomato",
+        "Wheat",
+        "Rice",
+        "Cotton",
+        "Maize",
+        "Sugarcane",
+        "Chilli",
+        "Soybean",
+    ],
 )
 
-# Browser based speech recognition — no library needed
 st.markdown(
     """
 <style>
@@ -41,7 +51,8 @@ function startDictation() {
         document.getElementById('mic-btn').innerText = '🔴 Recording...';
 
         recognition.onresult = function(e) {
-            document.getElementById('transcript').value = e.results[0][0].transcript;
+            document.getElementById('transcript').value =
+                e.results[0][0].transcript;
             document.getElementById('mic-btn').classList.remove('recording');
             document.getElementById('mic-btn').innerText = '🎙️ Speak';
             recognition.stop();
@@ -52,32 +63,66 @@ function startDictation() {
             document.getElementById('mic-btn').innerText = '🎙️ Speak';
         };
     } else {
-        alert('Your browser does not support speech recognition. Please use Chrome.');
+        alert('Speech recognition is not supported. Please use Chrome.');
     }
 }
 </script>
 
-<select id="lang-select" style="padding:8px;border-radius:6px;margin-bottom:10px;">
+<select
+    id="lang-select"
+    style="padding:8px;border-radius:6px;margin-bottom:10px;">
     <option value="te-IN">Telugu</option>
     <option value="hi-IN">Hindi</option>
     <option value="en-IN">English</option>
     <option value="ta-IN">Tamil</option>
 </select>
+
 <br>
-<button id="mic-btn" class="mic-btn" onclick="startDictation()">🎙️ Speak</button>
+
+<button
+    id="mic-btn"
+    class="mic-btn"
+    onclick="startDictation()">
+    🎙️ Speak
+</button>
+
 <br><br>
-<textarea id="transcript" rows="3"
-    style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:14px;"
+
+<textarea
+    id="transcript"
+    rows="3"
+    style="
+        width:100%;
+        padding:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:14px;
+    "
     placeholder="Your speech will appear here...">
 </textarea>
+
 <br>
-<button onclick="
-    var text = document.getElementById('transcript').value;
-    var input = window.parent.document.querySelectorAll('textarea')[0];
-    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    nativeInputValueSetter.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-" style="margin-top:8px;padding:8px 16px;background:#1565c0;color:white;border:none;border-radius:6px;cursor:pointer;">
+
+<button
+    onclick="
+        var text = document.getElementById('transcript').value;
+        var input = window.parent.document.querySelectorAll('textarea')[0];
+        var setter = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype,
+            'value'
+        ).set;
+        setter.call(input, text);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    "
+    style="
+        margin-top:8px;
+        padding:8px 16px;
+        background:#1565c0;
+        color:white;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    ">
     ✅ Use this text
 </button>
 """,
@@ -94,21 +139,20 @@ if st.button("🔍 Get advice"):
         st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running offline AI..."):
-            # Replace with Member 1's actual function once ready:
-            # from ai.disease_model import predict_disease
-            # result = predict_disease(crop=crop, symptoms=symptoms)
             result = {
                 "crop": crop,
                 "disease": "Early Blight",
                 "severity": "High",
-                "recommendation": "Apply Copper Fungicide at 2g per litre every 7 days",
+                "recommendation": (
+                    "Apply Copper Fungicide at 2g per litre every 7 days"
+                ),
                 "confidence": 0.87,
             }
 
         st.markdown("### Result")
         col1, col2 = st.columns(2)
         col1.metric("Disease", result["disease"])
-        col2.metric("Confidence", f"{result['confidence']*100:.0f}%")
+        col2.metric("Confidence", f"{result['confidence'] * 100:.0f}%")
         st.error(f"Severity: {result['severity']}")
         st.success(f"Recommendation: {result['recommendation']}")
         st.json(result)
