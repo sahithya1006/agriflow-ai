@@ -52,35 +52,58 @@ with col_left:
         ],
     )
 
-    col_text, col_mic = st.columns([9, 1])
-    with col_text:
-        symptoms = st.text_area(
-            "📝 Describe your problem",
-            placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
-            key="symptoms_input",
-            height=120,
-        )
-    with col_mic:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        if MIC_AVAILABLE:
-            if st.button("🎤", help="Click to speak"):
-                recognizer = sr.Recognizer()
-                with sr.Microphone() as source:
-                    with st.spinner("🎙️ Listening..."):
-                        recognizer.adjust_for_ambient_noise(source, duration=1)
-                        try:
-                            audio = recognizer.listen(source, timeout=5)
-                            text = recognizer.recognize_google(audio)
-                            st.session_state["symptoms_input"] = text
-                            st.rerun()
-                        except Exception:
-                            st.warning("Could not hear. Try again.")
-        else:
-            st.button("🎤", disabled=True, help="Mic not available")
-
-    st.button(
-        "🔍 Get Advice", key="get_advice", use_container_width=True, type="primary"
+    language = st.selectbox(
+        "🌐 Select language for voice input",
+        [
+            ("English", "en-IN"),
+            ("Telugu (తెలుగు)", "te-IN"),
+            ("Hindi (हिंदी)", "hi-IN"),
+            ("Tamil (தமிழ்)", "ta-IN"),
+            ("Kannada (ಕನ್ನಡ)", "kn-IN"),
+        ],
+        format_func=lambda x: x[0],
     )
+    lang_code = language[1]
+
+    symptoms = st.text_area(
+        "📝 Describe your problem",
+        placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
+        key="symptoms_input",
+        height=120,
+    )
+
+    mic_col, btn_col = st.columns([1, 3])
+    with mic_col:
+        mic_clicked = st.button(
+            "🎤 Speak", use_container_width=True, help=f"Speak in {language[0]}"
+        )
+    with btn_col:
+        get_advice = st.button(
+            "🔍 Get Advice", use_container_width=True, type="primary"
+        )
+
+    if mic_clicked:
+        if not MIC_AVAILABLE:
+            st.error(
+                "SpeechRecognition not installed. Run: pip install SpeechRecognition pyaudio"
+            )
+        else:
+            recognizer = sr.Recognizer()
+            with sr.Microphone() as source:
+                with st.spinner(f"🎙️ Listening in {language[0]}... Speak now!"):
+                    recognizer.adjust_for_ambient_noise(source, duration=1)
+                    try:
+                        audio = recognizer.listen(source, timeout=6)
+                        text = recognizer.recognize_google(audio, language=lang_code)
+                        st.session_state["symptoms_input"] = text
+                        st.success(f"✅ Heard: {text}")
+                        st.rerun()
+                    except sr.WaitTimeoutError:
+                        st.warning("⏱️ No speech detected. Try again.")
+                    except sr.UnknownValueError:
+                        st.warning("❓ Could not understand. Speak clearly.")
+                    except Exception as e:
+                        st.error(f"Mic error: {e}")
 
 with col_right:
     st.markdown("#### 💡 Example Questions")
@@ -96,7 +119,7 @@ with col_right:
             st.session_state["symptoms_input"] = ex
             st.rerun()
 
-if st.session_state.get("get_advice") and st.session_state.get("symptoms_input"):
+if get_advice and st.session_state.get("symptoms_input"):
     symptoms = st.session_state["symptoms_input"]
     with st.spinner("🤖 Running offline AI..."):
         from ai.disease_model import predict_disease
