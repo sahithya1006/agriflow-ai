@@ -2,6 +2,7 @@ import json
 
 import streamlit as st
 import streamlit.components.v1 as components
+
 from database.db import save_prediction
 
 st.title("❓ Ask a Question")
@@ -43,7 +44,8 @@ components.html(
 
 <button id="micBtn" onclick="startSpeech()"
     style="background:#2e7d32;color:white;border:none;padding:12px 24px;
-    border-radius:8px;cursor:pointer;font-size:16px;width:100%;margin-bottom:8px;">
+    border-radius:8px;cursor:pointer;font-size:16px;width:100%;
+    margin-bottom:8px;">
     🎙️ Click to Speak
 </button>
 
@@ -53,9 +55,10 @@ components.html(
 </div>
 
 <div id="result-box"
-    style="background:#f1f8e9;border:2px solid #2e7d32;border-radius:8px;
-    padding:12px;font-size:15px;min-height:50px;margin-bottom:8px;
-    color:#1b5e20;font-weight:500;word-wrap:break-word;">
+    style="background:#f1f8e9;border:2px solid #2e7d32;
+    border-radius:8px;padding:12px;font-size:15px;min-height:50px;
+    margin-bottom:8px;color:#1b5e20;font-weight:500;
+    word-wrap:break-word;">
     Your speech will appear here
 </div>
 
@@ -65,50 +68,64 @@ components.html(
 
 <script>
 function startSpeech() {{
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
-        document.getElementById('status').innerText = '❌ Use Chrome browser for voice.';
-        document.getElementById('status').style.color = 'red';
+    const statusElement = document.getElementById('status');
+    const micButton = document.getElementById('micBtn');
+    const resultBox = document.getElementById('result-box');
+
+    if (!('webkitSpeechRecognition' in window)
+        && !('SpeechRecognition' in window)) {{
+        statusElement.innerText = '❌ Use Chrome browser for voice.';
+        statusElement.style.color = 'red';
         return;
     }}
 
-    var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    var SpeechRecognition = window.SpeechRecognition
+        || window.webkitSpeechRecognition;
+    var recognition = new SpeechRecognition();
+
     recognition.lang = '{lang[1]}';
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    document.getElementById('micBtn').innerText = '🔴 Listening... Speak now';
-    document.getElementById('micBtn').style.background = '#c62828';
-    document.getElementById('status').innerText = '🎤 Listening... speak clearly';
-    document.getElementById('status').style.color = '#c62828';
-    document.getElementById('result-box').innerText = '...';
+    micButton.innerText = '🔴 Listening... Speak now';
+    micButton.style.background = '#c62828';
+    statusElement.innerText = '🎤 Listening... speak clearly';
+    statusElement.style.color = '#c62828';
+    resultBox.innerText = '...';
 
     recognition.start();
 
     recognition.onresult = function(event) {{
         var interim = '';
-        var final = '';
+        var finalText = '';
+
         for (var i = event.resultIndex; i < event.results.length; i++) {{
             if (event.results[i].isFinal) {{
-                final += event.results[i][0].transcript;
+                finalText += event.results[i][0].transcript;
             }} else {{
                 interim += event.results[i][0].transcript;
             }}
         }}
-        document.getElementById('result-box').innerText = final || interim;
+
+        resultBox.innerText = finalText || interim;
     }};
 
     recognition.onend = function() {{
-        document.getElementById('micBtn').innerText = '🎙️ Click to Speak again';
-        document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = '✅ Done! Copy the text above into the box below';
-        document.getElementById('status').style.color = '#2e7d32';
+        micButton.innerText = '🎙️ Click to Speak again';
+        micButton.style.background = '#2e7d32';
+        statusElement.innerText = (
+            '✅ Done! Copy the text above into the box below'
+        );
+        statusElement.style.color = '#2e7d32';
     }};
 
     recognition.onerror = function(event) {{
-        document.getElementById('micBtn').innerText = '🎙️ Click to Speak';
-        document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = '❌ Error: ' + event.error + '. Try again.';
-        document.getElementById('status').style.color = 'red';
+        micButton.innerText = '🎙️ Click to Speak';
+        micButton.style.background = '#2e7d32';
+        statusElement.innerText = (
+            '❌ Error: ' + event.error + '. Try again.'
+        );
+        statusElement.style.color = 'red';
     }};
 }}
 </script>
