@@ -22,9 +22,6 @@ lang = st.selectbox(
     format_func=lambda x: x[0],
 )
 
-st.markdown("#### 🎙️ Voice Input")
-st.caption("Click the button, speak, then copy the text into the box below")
-
 components.html(
     f"""
 <!DOCTYPE html>
@@ -40,17 +37,6 @@ components.html(
 <div id="status"
     style="color:#555;font-size:13px;margin-bottom:8px;min-height:20px;">
     Press the button and speak
-</div>
-
-<div id="result-box"
-    style="background:#f1f8e9;border:2px solid #2e7d32;border-radius:8px;
-    padding:12px;font-size:15px;min-height:50px;margin-bottom:8px;
-    color:#1b5e20;font-weight:500;word-wrap:break-word;">
-    Your speech will appear here
-</div>
-
-<div style="font-size:12px;color:#777;margin-bottom:4px;">
-    👆 Copy the text above and paste it in the box below in Streamlit
 </div>
 
 <script>
@@ -70,28 +56,44 @@ function startSpeech() {{
     document.getElementById('micBtn').style.background = '#c62828';
     document.getElementById('status').innerText = '🎤 Listening... speak clearly';
     document.getElementById('status').style.color = '#c62828';
-    document.getElementById('result-box').innerText = '...';
 
     recognition.start();
 
     recognition.onresult = function(event) {{
         var interim = '';
-        var final = '';
+        var final_transcript = '';
         for (var i = event.resultIndex; i < event.results.length; i++) {{
             if (event.results[i].isFinal) {{
-                final += event.results[i][0].transcript;
+                final_transcript += event.results[i][0].transcript;
             }} else {{
                 interim += event.results[i][0].transcript;
             }}
         }}
-        document.getElementById('result-box').innerText = final || interim;
+
+        var text = final_transcript || interim;
+        document.getElementById('status').innerText = '📝 ' + text;
+
+        if (final_transcript) {{
+            // directly paste into streamlit text area
+            var allTextAreas = window.parent.document.querySelectorAll('textarea');
+            for (var i = 0; i < allTextAreas.length; i++) {{
+                if (allTextAreas[i].getAttribute('aria-label') === 'Type or paste your problem here') {{
+                    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                        window.HTMLTextAreaElement.prototype, 'value'
+                    ).set;
+                    nativeInputValueSetter.call(allTextAreas[i], final_transcript);
+                    allTextAreas[i].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    break;
+                }}
+            }}
+        }}
     }};
 
     recognition.onend = function() {{
         document.getElementById('micBtn').innerText = '🎙️ Click to Speak again';
         document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = '✅ Done! Copy the text above into the box below';
         document.getElementById('status').style.color = '#2e7d32';
+        document.getElementById('status').innerText = '✅ Done! Click Get advice below';
     }};
 
     recognition.onerror = function(event) {{
@@ -105,12 +107,12 @@ function startSpeech() {{
 </body>
 </html>
 """,
-    height=220,
+    height=120,
 )
 
 symptoms = st.text_area(
     "Type or paste your problem here",
-    placeholder="Speak using the mic above, then paste the text here",
+    placeholder="Speak using the mic above — text will appear here automatically",
 )
 
 if st.button("🔍 Get advice"):
