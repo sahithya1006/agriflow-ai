@@ -18,6 +18,11 @@ omit = ["tests/*"]
 fail_under = 40
 show_missing = true
 
+[tool.vulture]
+paths = ["ai", "database", "ui", "app.py"]
+min_confidence = 80
+sort_by_size = true
+
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]
 

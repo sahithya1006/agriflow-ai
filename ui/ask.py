@@ -1,10 +1,27 @@
 import json
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
 import streamlit.components.v1 as components
 
 from database.db import save_prediction
+
+
+def save_json_output(result: dict[str, Any]) -> Path:
+    output_dir = Path("outputs")
+    output_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    crop = str(result["crop"]).lower().replace(" ", "_")
+    file_path = output_dir / f"{crop}_{timestamp}.json"
+
+    with file_path.open("w", encoding="utf-8") as file:
+        json.dump(result, file, indent=4)
+
+    return file_path
+
 
 st.title("❓ Ask a Question")
 st.caption("Type your farming problem or use the microphone")

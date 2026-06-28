@@ -49,3 +49,16 @@ repos:
         args: ["--maxkb=500"]
       - id: mixed-line-ending
         args: ["--fix=lf"]
+
+  - repo: local
+    hooks:
+      - id: vulture
+        name: vulture
+        entry: python -m vulture ai database ui app.py --min-confidence 80
+        language: system
+        pass_filenames: false
+      - id: semgrep
+        name: semgrep
+        entry: semgrep scan --metrics=off --disable-version-check --config .semgrep.yml ai database ui app.py
+        language: system
+        pass_filenames: false

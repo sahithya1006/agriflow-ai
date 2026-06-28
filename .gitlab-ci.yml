@@ -1,16 +1,13 @@
 stages:
-  - stage-ruff-lint
-  - stage-ruff-format
-  - stage-mypy
-  - stage-bandit
-  - stage-pip-audit
-  - stage-license
-  - stage-readme
-  - stage-contributing
-  - stage-changelog
-  - stage-security-doc
-  - stage-spec
-  - stage-unit-tests
+  - lint
+  - format
+  - type_check
+  - security
+  - audit
+  - docs
+  - spec
+  - coverage
+  - test
 
 variables:
   GIT_DEPTH: "1"
@@ -21,66 +18,96 @@ before_script:
   - '& "$env:PYTHON_EXE" --version'
   - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
   - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
-  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint vulture semgrep'
 
-ruff-lint:
-  stage: stage-ruff-lint
+lint:
+  stage: lint
   script:
     - '& "$env:PYTHON_EXE" -m ruff check .'
 
-ruff-format:
-  stage: stage-ruff-format
+format:
+  stage: format
   script:
     - '& "$env:PYTHON_EXE" -m ruff format --check .'
 
-mypy-check:
-  stage: stage-mypy
+type_check:
+  stage: type_check
   script:
     - '& "$env:PYTHON_EXE" -m mypy ai database ui --ignore-missing-imports'
   allow_failure: true
 
+vulture:
+  stage: lint
+  script:
+    - '& "$env:PYTHON_EXE" -m vulture ai database ui app.py --min-confidence 80'
+  allow_failure: true
+
+semgrep:
+  stage: security
+  script:
+    - '& semgrep scan --metrics=off --disable-version-check --config .semgrep.yml ai database ui app.py'
+  allow_failure: true
+
 bandit-scan:
-  stage: stage-bandit
+  stage: security
   script:
     - '& "$env:PYTHON_EXE" -m bandit -r ai database ui app.py -ll'
 
 pip-audit:
-  stage: stage-pip-audit
+  stage: audit
   script:
     - '& "$env:PYTHON_EXE" -m pip_audit -r requirements.txt'
   allow_failure: true
 
+changelog-git-cliff:
+  stage: docs
+  script:
+    - '& git cliff --config .git-cliff.toml --unreleased --strip header'
+  allow_failure: true
+
 license-check:
-  stage: stage-license
+  stage: docs
   script:
     - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
 
 readme-check:
-  stage: stage-readme
+  stage: docs
   script:
     - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
 
 contributing-check:
-  stage: stage-contributing
+  stage: docs
   script:
     - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
 
 changelog-check:
-  stage: stage-changelog
+  stage: docs
   script:
     - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
 
 security-doc-check:
-  stage: stage-security-doc
+  stage: docs
   script:
     - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
 
 spec-check:
-  stage: stage-spec
+  stage: spec
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''SPEC OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; required = [''.specify/memory/constitution.md'', ''.specify/templates/spec-template.md'', ''.specify/templates/plan-template.md'', ''.specify/templates/tasks-template.md'', ''specs/offline-crop-guidance/spec.md'', ''specs/offline-crop-guidance/plan.md'', ''specs/offline-crop-guidance/tasks.md'']; missing = [p for p in required if not pathlib.Path(p).exists()]; assert not missing, missing; print(''SPEC KIT OK'')"'
 
-unit-tests:
-  stage: stage-unit-tests
+coverage:
+  stage: coverage
+  script:
+    - '& "$env:PYTHON_EXE" -m pytest --cov=ai --cov=database --cov-report=term-missing --cov-report=xml'
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+test:
+  stage: test
   script:
     - '& "$env:PYTHON_EXE" -m pytest -v'
