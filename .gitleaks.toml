@@ -1,0 +1,9 @@
+title = "agriflow-ai gitleaks configuration"
+
+[allowlist]
+description = "Ignore local generated artifacts and model binaries"
+paths = [
+  '''\.git/''',
+  '''.*\.pkl$''',
+  '''.*\.db$''',
+]

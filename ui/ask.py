@@ -1,6 +1,9 @@
 import json
+from typing import Any
+
 import streamlit as st
 import streamlit.components.v1 as components
+
 from database.db import save_prediction
 
 st.title("❓ Ask a Question")
@@ -8,7 +11,16 @@ st.caption("Type your farming problem or use the microphone")
 
 crop = st.selectbox(
     "Select crop",
-    ["Tomato", "Wheat", "Rice", "Cotton", "Maize", "Sugarcane", "Chilli", "Soybean"],
+    [
+        "Tomato",
+        "Wheat",
+        "Rice",
+        "Cotton",
+        "Maize",
+        "Sugarcane",
+        "Chilli",
+        "Soybean",
+    ],
 )
 
 lang = st.selectbox(
@@ -30,7 +42,8 @@ components.html(
 
 <button id="micBtn" onclick="startSpeech()"
     style="background:#2e7d32;color:white;border:none;padding:12px 24px;
-    border-radius:8px;cursor:pointer;font-size:16px;width:100%;margin-bottom:8px;">
+    border-radius:8px;cursor:pointer;font-size:16px;width:100%;
+    margin-bottom:8px;">
     🎙️ Click to Speak
 </button>
 
@@ -41,13 +54,21 @@ components.html(
 
 <script>
 function startSpeech() {{
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
-        document.getElementById('status').innerText = '❌ Use Chrome browser for voice.';
-        document.getElementById('status').style.color = 'red';
+    const statusElement = document.getElementById('status');
+    const micButton = document.getElementById('micBtn');
+    const resultBox = document.getElementById('result-box');
+
+    if (!('webkitSpeechRecognition' in window)
+        && !('SpeechRecognition' in window)) {{
+        statusElement.innerText = '❌ Use Chrome browser for voice.';
+        statusElement.style.color = 'red';
         return;
     }}
 
-    var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    var SpeechRecognition = window.SpeechRecognition
+        || window.webkitSpeechRecognition;
+    var recognition = new SpeechRecognition();
+
     recognition.lang = '{lang[1]}';
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -97,10 +118,12 @@ function startSpeech() {{
     }};
 
     recognition.onerror = function(event) {{
-        document.getElementById('micBtn').innerText = '🎙️ Click to Speak';
-        document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = '❌ Error: ' + event.error + '. Try again.';
-        document.getElementById('status').style.color = 'red';
+        micButton.innerText = '🎙️ Click to Speak';
+        micButton.style.background = '#2e7d32';
+        statusElement.innerText = (
+            '❌ Error: ' + event.error + '. Try again.'
+        );
+        statusElement.style.color = 'red';
     }};
 }}
 </script>
@@ -120,30 +143,37 @@ if st.button("🔍 Get advice"):
         st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running AI..."):
-            result = {
+            result: dict[str, Any] = {
                 "crop": crop,
                 "disease": "Early Blight",
                 "severity": "High",
-                "recommendation": "Apply Copper Fungicide at 2g per litre every 7 days",
+                "recommendation": (
+                    "Apply Copper Fungicide at 2g per litre every 7 days"
+                ),
                 "confidence": 0.87,
             }
 
+        disease = str(result["disease"])
+        confidence = float(result["confidence"])
+        severity = str(result["severity"])
+        recommendation = str(result["recommendation"])
+
         st.markdown("### Result")
         col1, col2 = st.columns(2)
-        col1.metric("Disease", result["disease"])
-        col2.metric("Confidence", f"{result['confidence']*100:.0f}%")
-        st.error(f"Severity: {result['severity']}")
-        st.success(f"Recommendation: {result['recommendation']}")
+        col1.metric("Disease", disease)
+        col2.metric("Confidence", f"{confidence * 100:.0f}%")
+        st.error(f"Severity: {severity}")
+        st.success(f"Recommendation: {recommendation}")
         st.json(result)
 
-        if st.button("💾 Save to history"):
+        if st.button("Save to history"):
             save_prediction(
                 input_type="voice",
-                crop=result["crop"],
-                disease=result["disease"],
-                severity=result["severity"],
-                recommendation=result["recommendation"],
-                confidence=result["confidence"],
+                crop=str(result["crop"]),
+                disease=disease,
+                severity=severity,
+                recommendation=recommendation,
+                confidence=confidence,
                 raw_json=json.dumps(result),
             )
             st.success("Saved.")

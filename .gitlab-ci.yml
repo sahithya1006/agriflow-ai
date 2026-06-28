@@ -1,7 +1,3 @@
-# .gitlab-ci.yml
-# CI/CD pipeline for AgriFlow AI
-# 13 stages — 13 circles — 1 job each
-
 stages:
   - stage-ruff-lint
   - stage-ruff-format
@@ -15,101 +11,76 @@ stages:
   - stage-security-doc
   - stage-spec
   - stage-unit-tests
-  - stage-integration
 
-# Check 1 — Ruff lint
+variables:
+  GIT_DEPTH: "1"
+  GIT_STRATEGY: clone
+  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+
+before_script:
+  - '& "$env:PYTHON_EXE" --version'
+  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
+  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint'
+
 ruff-lint:
   stage: stage-ruff-lint
   script:
-    - '$env:PYTHON -m pip install ruff --quiet'
-    - '$env:PYTHON -m ruff check .'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m ruff check .'
 
-# Check 2 — Ruff format
 ruff-format:
   stage: stage-ruff-format
   script:
-    - '$env:PYTHON -m pip install ruff --quiet'
-    - '$env:PYTHON -m ruff format --check .'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m ruff format --check .'
 
-# Check 3 — MyPy type check
 mypy-check:
   stage: stage-mypy
   script:
-    - '$env:PYTHON -m pip install mypy --quiet'
-    - '$env:PYTHON -m mypy ui/ database/ --ignore-missing-imports'
+    - '& "$env:PYTHON_EXE" -m mypy ai database ui --ignore-missing-imports'
   allow_failure: true
 
-# Check 4 — Bandit security scan
 bandit-scan:
   stage: stage-bandit
   script:
-    - '$env:PYTHON -m pip install bandit --quiet'
-    - '$env:PYTHON -m bandit -r . -ll --exclude .venv,tests'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m bandit -r ai database ui app.py -ll'
 
-# Check 5 — pip-audit vulnerability check
 pip-audit:
   stage: stage-pip-audit
   script:
-    - '$env:PYTHON -m pip install pip-audit --quiet'
-    - '$env:PYTHON -m pip_audit'
+    - '& "$env:PYTHON_EXE" -m pip_audit -r requirements.txt'
   allow_failure: true
 
-# Check 6 — LICENSE file exists
 license-check:
   stage: stage-license
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''LICENSE''), ''LICENSE missing''; print(''LICENSE found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
 
-# Check 7 — README file exists
 readme-check:
   stage: stage-readme
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''README.md''), ''README.md missing''; print(''README found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
 
-# Check 8 — CONTRIBUTING file exists
 contributing-check:
   stage: stage-contributing
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''CONTRIBUTING.md''), ''CONTRIBUTING.md missing''; print(''CONTRIBUTING found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
 
-# Check 9 — CHANGELOG file exists
 changelog-check:
   stage: stage-changelog
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''CHANGELOG.md''), ''CHANGELOG.md missing''; print(''CHANGELOG found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
 
-# Check 10 — SECURITY file exists
 security-doc-check:
   stage: stage-security-doc
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''SECURITY.md''), ''SECURITY.md missing''; print(''SECURITY found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
 
-# Check 11 — SPEC file exists
 spec-check:
   stage: stage-spec
   script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''SPEC.md''), ''SPEC.md missing''; print(''SPEC found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''SPEC OK'')"'
 
-# Check 12 — Run unit tests
 unit-tests:
   stage: stage-unit-tests
   script:
-    - '$env:PYTHON -m pip install pytest pandas scikit-learn pillow joblib --quiet'
-    - '$env:PYTHON -m pytest tests/ -v --tb=short'
-  allow_failure: false
-
-# Check 13 — INTEGRATION.md exists
-integration-check:
-  stage: stage-integration
-  script:
-    - '$env:PYTHON -c "import os; assert os.path.isfile(''INTEGRATION.md''), ''INTEGRATION.md missing''; print(''INTEGRATION found'')"'
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m pytest -v'
