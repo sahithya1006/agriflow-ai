@@ -1,5 +1,6 @@
 import json
 import streamlit as st
+import streamlit.components.v1 as components
 from database.db import save_prediction
 
 st.title("❓ Ask a Question")
@@ -10,93 +11,105 @@ crop = st.selectbox(
     ["Tomato", "Wheat", "Rice", "Cotton", "Maize", "Sugarcane", "Chilli", "Soybean"],
 )
 
-# Browser based speech recognition — no library needed
-st.markdown(
-    """
-<style>
-.mic-btn {
-    background-color: #2e7d32;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-}
-.mic-btn.recording {
-    background-color: #c62828;
-}
-</style>
+lang = st.selectbox(
+    "Select language for voice",
+    [
+        ("Telugu", "te-IN"),
+        ("Hindi", "hi-IN"),
+        ("English", "en-IN"),
+        ("Tamil", "ta-IN"),
+    ],
+    format_func=lambda x: x[0],
+)
 
-<script>
-function startDictation() {
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
-        var recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = document.getElementById('lang-select').value;
-        recognition.start();
+components.html(
+    f"""
+<!DOCTYPE html>
+<html>
+<body style="background:transparent;margin:0;padding:0;">
 
-        document.getElementById('mic-btn').classList.add('recording');
-        document.getElementById('mic-btn').innerText = '🔴 Recording...';
+<button id="micBtn" onclick="startSpeech()"
+    style="background:#2e7d32;color:white;border:none;padding:12px 24px;
+    border-radius:8px;cursor:pointer;font-size:16px;width:100%;">
+    🎙️ Click here to Speak
+</button>
 
-        recognition.onresult = function(e) {
-            document.getElementById('transcript').value = e.results[0][0].transcript;
-            document.getElementById('mic-btn').classList.remove('recording');
-            document.getElementById('mic-btn').innerText = '🎙️ Speak';
-            recognition.stop();
-        };
+<p id="status" style="color:gray;font-size:13px;margin-top:8px;"></p>
 
-        recognition.onerror = function(e) {
-            document.getElementById('mic-btn').classList.remove('recording');
-            document.getElementById('mic-btn').innerText = '🎙️ Speak';
-        };
-    } else {
-        alert('Your browser does not support speech recognition. Please use Chrome.');
-    }
-}
-</script>
-
-<select id="lang-select" style="padding:8px;border-radius:6px;margin-bottom:10px;">
-    <option value="te-IN">Telugu</option>
-    <option value="hi-IN">Hindi</option>
-    <option value="en-IN">English</option>
-    <option value="ta-IN">Tamil</option>
-</select>
-<br>
-<button id="mic-btn" class="mic-btn" onclick="startDictation()">🎙️ Speak</button>
-<br><br>
-<textarea id="transcript" rows="3"
-    style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:14px;"
+<textarea id="result" rows="3"
+    style="width:100%;margin-top:8px;padding:10px;border-radius:8px;
+    border:1px solid #ccc;font-size:14px;"
     placeholder="Your speech will appear here...">
 </textarea>
-<br>
-<button onclick="
-    var text = document.getElementById('transcript').value;
-    var input = window.parent.document.querySelectorAll('textarea')[0];
-    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    nativeInputValueSetter.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-" style="margin-top:8px;padding:8px 16px;background:#1565c0;color:white;border:none;border-radius:6px;cursor:pointer;">
+
+<button onclick="sendText()"
+    style="margin-top:8px;background:#1565c0;color:white;border:none;
+    padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;">
     ✅ Use this text
 </button>
+
+<script>
+var recognition;
+
+function startSpeech() {{
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
+        document.getElementById('status').innerText = 'Please use Chrome browser for voice input.';
+        return;
+    }}
+
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = '{lang[1]}';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    document.getElementById('micBtn').innerText = '🔴 Recording... Speak now';
+    document.getElementById('micBtn').style.background = '#c62828';
+    document.getElementById('status').innerText = 'Listening...';
+
+    recognition.start();
+
+    recognition.onresult = function(event) {{
+        var transcript = event.results[0][0].transcript;
+        document.getElementById('result').value = transcript;
+        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
+        document.getElementById('micBtn').style.background = '#2e7d32';
+        document.getElementById('status').innerText = 'Done! Click Use this text.';
+    }};
+
+    recognition.onerror = function(event) {{
+        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
+        document.getElementById('micBtn').style.background = '#2e7d32';
+        document.getElementById('status').innerText = 'Error: ' + event.error + '. Try again.';
+    }};
+
+    recognition.onend = function() {{
+        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
+        document.getElementById('micBtn').style.background = '#2e7d32';
+    }};
+}}
+
+function sendText() {{
+    var text = document.getElementById('result').value;
+    if (text) {{
+        window.parent.postMessage({{type: 'streamlit:setComponentValue', value: text}}, '*');
+    }}
+}}
+</script>
+</body>
+</html>
 """,
-    unsafe_allow_html=True,
+    height=280,
 )
 
 symptoms = st.text_area(
-    "Or type your problem here",
-    placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
+    "Or type your problem here", placeholder="Spoken text or type manually here"
 )
 
 if st.button("🔍 Get advice"):
     if not symptoms:
-        st.warning("Please describe your problem first.")
+        st.warning("Please describe your problem or speak first.")
     else:
-        with st.spinner("Running offline AI..."):
-            # Replace with Member 1's actual function once ready:
-            # from ai.disease_model import predict_disease
-            # result = predict_disease(crop=crop, symptoms=symptoms)
+        with st.spinner("Running AI..."):
             result = {
                 "crop": crop,
                 "disease": "Early Blight",
