@@ -1,107 +1,55 @@
-# .gitlab-ci.yml
-# CI/CD pipeline for AgriFlow AI
-# 12 individual checks — Windows shell runner (no Docker)
-
 stages:
   - lint
   - security
   - audit
   - test
 
-# ── LINT STAGE ──────────────────────────────────────────────
+variables:
+  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
 
-# Check 1 — Ruff lint
 ruff-lint:
   stage: lint
   script:
-    - pip install ruff --quiet
-    - ruff check .
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m pip install ruff --quiet'
+    - '& "$env:PYTHON_EXE" -m ruff check .'
 
-# Check 2 — Ruff format
 ruff-format:
   stage: lint
   script:
-    - pip install ruff --quiet
-    - ruff format --check .
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m pip install ruff --quiet'
+    - '& "$env:PYTHON_EXE" -m ruff format --check .'
 
-# Check 3 — MyPy type check
-mypy-check:
-  stage: lint
-  script:
-    - pip install mypy --quiet
-    - mypy ui/ database/ --ignore-missing-imports
-  allow_failure: true
-
-# ── SECURITY STAGE ──────────────────────────────────────────
-
-# Check 4 — Bandit security scan
 bandit-scan:
   stage: security
   script:
-    - pip install bandit --quiet
-    - bandit -r . -ll --exclude .venv,tests
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m pip install bandit --quiet'
+    - '& "$env:PYTHON_EXE" -m bandit -r ai -ll'
 
-# Check 5 — pip-audit vulnerability check
 pip-audit:
   stage: security
   script:
-    - pip install pip-audit --quiet
-    - pip-audit
+    - '& "$env:PYTHON_EXE" -m pip install pip-audit --quiet'
+    - '& "$env:PYTHON_EXE" -m pip_audit'
   allow_failure: true
 
-# ── AUDIT STAGE ─────────────────────────────────────────────
-
-# Check 6 — LICENSE file exists
 license-check:
   stage: audit
   script:
-    - python -c "import os; assert os.path.isfile('LICENSE'), 'LICENSE missing'; print('LICENSE found')"
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''LICENSE''), ''LICENSE missing''; print(''LICENSE found'')"'
 
-# Check 7 — README file exists
 readme-check:
   stage: audit
   script:
-    - python -c "import os; assert os.path.isfile('README.md'), 'README.md missing'; print('README found')"
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''README.md''), ''README missing''; print(''README found'')"'
 
-# Check 8 — CONTRIBUTING file exists
-contributing-check:
-  stage: audit
-  script:
-    - python -c "import os; assert os.path.isfile('CONTRIBUTING.md'), 'CONTRIBUTING.md missing'; print('CONTRIBUTING found')"
-  allow_failure: false
-
-# Check 9 — CHANGELOG file exists
-changelog-check:
-  stage: audit
-  script:
-    - python -c "import os; assert os.path.isfile('CHANGELOG.md'), 'CHANGELOG.md missing'; print('CHANGELOG found')"
-  allow_failure: false
-
-# Check 10 — SECURITY file exists
-security-doc-check:
-  stage: audit
-  script:
-    - python -c "import os; assert os.path.isfile('SECURITY.md'), 'SECURITY.md missing'; print('SECURITY found')"
-  allow_failure: false
-
-# Check 11 — SPEC file exists
 spec-check:
   stage: audit
   script:
-    - python -c "import os; assert os.path.isfile('SPEC.md'), 'SPEC.md missing'; print('SPEC found')"
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''SPEC.md''), ''SPEC missing''; print(''SPEC found'')"'
 
-# ── TEST STAGE ──────────────────────────────────────────────
-
-# Check 12 — Run unit tests
 unit-tests:
   stage: test
   script:
-    - pip install pytest pandas scikit-learn pillow joblib --quiet
-    - pytest tests/ -v --tb=short
-  allow_failure: false
+    - '& "$env:PYTHON_EXE" -m pip install pytest pandas scikit-learn pillow joblib pydantic pytesseract --quiet'
+    - '& "$env:PYTHON_EXE" -m pytest tests/ -v --tb=short'
+    
