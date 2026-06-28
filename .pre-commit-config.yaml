@@ -1,4 +1,4 @@
-# .pre-commit-config.yaml
+﻿# .pre-commit-config.yaml
 # These hooks run automatically before every git commit
 # They check code quality before anything is pushed to GitLab
 
@@ -29,7 +29,7 @@ repos:
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: ["-r", "ai", "database", "ui", "app.py", "-ll", "-ii"]
+        args: ["-r", "-ll", "-ii"]
         exclude: tests/
 
   - repo: https://github.com/Yelp/detect-secrets

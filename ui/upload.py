@@ -7,7 +7,7 @@ import streamlit as st
 
 from database.db import save_prediction
 
-st.title("Upload Image")
+st.title("📷 Upload Image")
 st.caption("Upload a crop photo or fertilizer bill")
 
 uploaded = st.file_uploader("Choose a file", type=["jpg", "jpeg", "png", "pdf"])
@@ -39,15 +39,19 @@ if uploaded:
             soil_type="Red Soil",
         )
 
+    st.session_state["upload_result"] = result
+
+if "upload_result" in st.session_state:
+    result = st.session_state["upload_result"]
     st.markdown("### Result")
     col1, col2 = st.columns(2)
     col1.metric("Disease", result["disease"])
-    col2.metric("Confidence", f"{result['confidence'] * 100:.0f}%")
+    col2.metric("Confidence", f"{result['confidence']*100:.0f}%")
     st.error(f"Severity: {result['severity']}")
     st.success(f"Recommendation: {result['recommendation']}")
     st.json(result)
 
-    if st.button("Save to history"):
+    if st.button("💾 Save to history"):
         save_prediction(
             input_type="image",
             crop=result["crop"],
@@ -57,4 +61,5 @@ if uploaded:
             confidence=result["confidence"],
             raw_json=json.dumps(result),
         )
-        st.success("Saved.")
+        st.success("✅ Saved to history!")
+        del st.session_state["upload_result"]
