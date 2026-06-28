@@ -1,15 +1,3 @@
-variables:
-  GIT_LFS_SKIP_SMUDGE: "1"
-  GIT_DEPTH: "1"
-  GIT_STRATEGY: clone
-  PYTHON_EXE: C:\Users\jashwitha\AppData\Local\Programs\Python\Python311\python.exe
-
-before_script:
-  - '& "$env:PYTHON_EXE" --version'
-  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
-  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
-  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest bandit pip-audit'
-
 stages:
   - stage-ruff-lint
   - stage-ruff-format
@@ -24,6 +12,17 @@ stages:
   - stage-spec
   - stage-unit-tests
   - stage-integration
+
+variables:
+  GIT_DEPTH: "1"
+  GIT_STRATEGY: clone
+  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+
+before_script:
+  - '& "$env:PYTHON_EXE" --version'
+  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
+  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint vulture semgrep'
 
 ruff-lint:
   stage: stage-ruff-lint
@@ -55,32 +54,32 @@ pip-audit:
 license-check:
   stage: stage-license
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(chr(76)+chr(73)+chr(67)+chr(69)+chr(78)+chr(83)+chr(69)).exists(); print(chr(79)+chr(75))"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
 
 readme-check:
   stage: stage-readme
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
 
 contributing-check:
   stage: stage-contributing
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
 
 changelog-check:
   stage: stage-changelog
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
 
 security-doc-check:
   stage: stage-security-doc
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
 
 spec-check:
   stage: stage-spec
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''SPEC OK'')"'
 
 unit-tests:
   stage: stage-unit-tests
@@ -90,4 +89,4 @@ unit-tests:
 integration-check:
   stage: stage-integration
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''INTEGRATION.md'').exists(); print(''OK'')"'
+    - '& "$env:PYTHON_EXE" -m pytest tests/ -v'
