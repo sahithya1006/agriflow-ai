@@ -35,6 +35,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+if "voice_text" not in st.session_state:
+    st.session_state["voice_text"] = ""
+
 col_left, col_right = st.columns([2, 1])
 
 with col_left:
@@ -67,16 +70,14 @@ with col_left:
 
     symptoms = st.text_area(
         "📝 Describe your problem",
+        value=st.session_state["voice_text"],
         placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
-        key="symptoms_input",
         height=120,
     )
 
     mic_col, btn_col = st.columns([1, 3])
     with mic_col:
-        mic_clicked = st.button(
-            "🎤 Speak", use_container_width=True, help=f"Speak in {language[0]}"
-        )
+        mic_clicked = st.button("🎤 Speak", use_container_width=True)
     with btn_col:
         get_advice = st.button(
             "🔍 Get Advice", use_container_width=True, type="primary"
@@ -84,9 +85,7 @@ with col_left:
 
     if mic_clicked:
         if not MIC_AVAILABLE:
-            st.error(
-                "SpeechRecognition not installed. Run: pip install SpeechRecognition pyaudio"
-            )
+            st.error("Run: pip install SpeechRecognition pyaudio")
         else:
             recognizer = sr.Recognizer()
             with sr.Microphone() as source:
@@ -95,7 +94,7 @@ with col_left:
                     try:
                         audio = recognizer.listen(source, timeout=6)
                         text = recognizer.recognize_google(audio, language=lang_code)
-                        st.session_state["symptoms_input"] = text
+                        st.session_state["voice_text"] = text
                         st.success(f"✅ Heard: {text}")
                         st.rerun()
                     except sr.WaitTimeoutError:
@@ -116,11 +115,10 @@ with col_right:
     ]
     for ex in examples:
         if st.button(ex, use_container_width=True, key=ex):
-            st.session_state["symptoms_input"] = ex
+            st.session_state["voice_text"] = ex
             st.rerun()
 
-if get_advice and st.session_state.get("symptoms_input"):
-    symptoms = st.session_state["symptoms_input"]
+if get_advice and symptoms:
     with st.spinner("🤖 Running offline AI..."):
         from ai.disease_model import predict_disease
         from ai.text_classifier import classify_query
@@ -132,6 +130,7 @@ if get_advice and st.session_state.get("symptoms_input"):
         result["category"] = category
 
     st.session_state["last_result"] = result
+    st.session_state["voice_text"] = ""
 
 if "last_result" in st.session_state:
     result = st.session_state["last_result"]
