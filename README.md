@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # agriflow-ai
 
 Offline-first AI assistant for farmers. The app runs locally on CPU, stores data in SQLite, and avoids cloud dependencies so it can be used in low-connectivity field settings.
