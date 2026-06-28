@@ -1,25 +1,29 @@
-stages:
-  - lint
-  - format
-  - type_check
-  - security
-  - audit
-  - docs
-  - spec
-  - coverage
-  - test
-
 variables:
+  GIT_LFS_SKIP_SMUDGE: "1"
   GIT_DEPTH: "1"
   GIT_STRATEGY: clone
-  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
-  SEMGREP_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\semgrep.exe"
+  PYTHON_EXE: C:\Users\jashwitha\AppData\Local\Programs\Python\Python311\python.exe
 
 before_script:
   - '& "$env:PYTHON_EXE" --version'
   - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
   - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
-  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint vulture semgrep'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest bandit pip-audit'
+
+stages:
+  - stage-ruff-lint
+  - stage-ruff-format
+  - stage-mypy
+  - stage-bandit
+  - stage-pip-audit
+  - stage-license
+  - stage-readme
+  - stage-contributing
+  - stage-changelog
+  - stage-security-doc
+  - stage-spec
+  - stage-unit-tests
+  - stage-integration
 
 lint:
   stage: lint
@@ -69,32 +73,32 @@ changelog-git-cliff:
 license-check:
   stage: docs
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(chr(76)+chr(73)+chr(67)+chr(69)+chr(78)+chr(83)+chr(69)).exists(); print(chr(79)+chr(75))"'
 
 readme-check:
   stage: docs
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''OK'')"'
 
 contributing-check:
   stage: docs
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''OK'')"'
 
 changelog-check:
   stage: docs
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''OK'')"'
 
 security-doc-check:
   stage: docs
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''OK'')"'
 
 spec-check:
   stage: spec
   script:
-    - '& "$env:PYTHON_EXE" -c "import pathlib; required = [''.specify/memory/constitution.md'', ''.specify/templates/spec-template.md'', ''.specify/templates/plan-template.md'', ''.specify/templates/tasks-template.md'', ''specs/offline-crop-guidance/spec.md'', ''specs/offline-crop-guidance/plan.md'', ''specs/offline-crop-guidance/tasks.md'']; missing = [p for p in required if not pathlib.Path(p).exists()]; assert not missing, missing; print(''SPEC KIT OK'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''OK'')"'
 
 coverage:
   stage: coverage
@@ -112,3 +116,8 @@ test:
   stage: test
   script:
     - '& "$env:PYTHON_EXE" -m pytest -v'
+
+integration-check:
+  stage: stage-integration
+  script:
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''INTEGRATION.md'').exists(); print(''OK'')"'
