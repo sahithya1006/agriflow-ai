@@ -1,28 +1,54 @@
-import streamlit as st
 import json
+import speech_recognition as sr
+import streamlit as st
+
 from database.db import save_prediction
 
 st.title("❓ Ask a Question")
-st.caption("Type your farming problem in any language")
+st.caption("Type your farming problem or use the microphone")
 
 crop = st.selectbox(
     "Select crop",
     ["Tomato", "Wheat", "Rice", "Cotton", "Maize", "Sugarcane", "Chilli", "Soybean"],
 )
 
-symptoms = st.text_area(
-    "Describe your problem",
-    placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
-)
+# ── Voice input ──────────────────────────────────────────────
+col_text, col_mic = st.columns([9, 1])
 
+with col_text:
+    symptoms = st.text_area(
+        "Describe your problem",
+        placeholder="e.g. My tomato leaves have brown spots and are turning yellow",
+        key="symptoms_input",
+        height=100,
+    )
+
+with col_mic:
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🎤", help="Click to speak your problem"):
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            with st.spinner("🎙️ Listening..."):
+                recognizer.adjust_for_ambient_noise(source, duration=1)
+                try:
+                    audio = recognizer.listen(source, timeout=5)
+                    text = recognizer.recognize_google(audio)
+                    st.session_state["symptoms_input"] = text
+                    st.success(f"Heard: {text}")
+                    st.rerun()
+                except sr.WaitTimeoutError:
+                    st.warning("No speech detected. Try again.")
+                except sr.UnknownValueError:
+                    st.warning("Could not understand. Speak clearly.")
+                except Exception as e:
+                    st.error(f"Mic error: {e}")
+
+# ── Get advice ───────────────────────────────────────────────
 if st.button("🔍 Get advice"):
     if not symptoms:
         st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running offline AI..."):
-            # Replace this with Member 1's actual function once ready:
-            # from ai.disease_model import predict_disease
-            # result = predict_disease(crop=crop, symptoms=symptoms)
             from ai.disease_model import predict_disease
             from ai.text_classifier import classify_query
 
