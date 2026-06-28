@@ -1,3 +1,15 @@
+﻿variables:
+  GIT_LFS_SKIP_SMUDGE: "1"
+  GIT_DEPTH: "1"
+  GIT_STRATEGY: clone
+  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+
+before_script:
+  - '& "$env:PYTHON_EXE" --version'
+  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
+  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint'
+
 stages:
   - stage-ruff-lint
   - stage-ruff-format
@@ -11,17 +23,7 @@ stages:
   - stage-security-doc
   - stage-spec
   - stage-unit-tests
-
-variables:
-  GIT_DEPTH: "1"
-  GIT_STRATEGY: clone
-  PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
-
-before_script:
-  - '& "$env:PYTHON_EXE" --version'
-  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
-  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
-  - '& "$env:PYTHON_EXE" -m pip install ruff mypy pytest pytest-cov bandit pip-audit flake8 pylint'
+  - stage-integration
 
 ruff-lint:
   stage: stage-ruff-lint
@@ -84,3 +86,8 @@ unit-tests:
   stage: stage-unit-tests
   script:
     - '& "$env:PYTHON_EXE" -m pytest -v'
+
+integration-check:
+  stage: stage-integration
+  script:
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''INTEGRATION.md'').exists(); print(''INTEGRATION OK'')"'
