@@ -1,7 +1,11 @@
-streamlit
 pandas
-pydantic
 scikit-learn
-pytesseract
-Pillow
 joblib
+pydantic
+pytesseract
+pillow
+pytest
+ruff
+mypy
+bandit
+pip-audit

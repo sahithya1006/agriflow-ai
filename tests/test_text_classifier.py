@@ -31,4 +31,3 @@ def test_classify_government_scheme_query():
     result = classify_query("Am I eligible for PM Kisan scheme?")
 
     assert result["category"] == "Government Scheme"
-    

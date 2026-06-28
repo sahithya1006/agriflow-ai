@@ -42,7 +42,7 @@ if uploaded:
     st.markdown("### Result")
     col1, col2 = st.columns(2)
     col1.metric("Disease", result["disease"])
-    col2.metric("Confidence", f"{result['confidence']*100:.0f}%")
+    col2.metric("Confidence", f"{result['confidence'] * 100:.0f}%")
     st.error(f"Severity: {result['severity']}")
     st.success(f"Recommendation: {result['recommendation']}")
     st.json(result)
