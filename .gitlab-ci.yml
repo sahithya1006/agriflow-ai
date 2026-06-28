@@ -7,49 +7,87 @@ stages:
 variables:
   PYTHON_EXE: "C:\\Users\\jashwitha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
 
+before_script:
+  - '& "$env:PYTHON_EXE" --version'
+  - '& "$env:PYTHON_EXE" -m pip install --upgrade pip'
+  - '& "$env:PYTHON_EXE" -m pip install -r requirements.txt'
+  - '& "$env:PYTHON_EXE" -m pip install ruff mypy bandit pip-audit pytest'
+
+# --------------------
+# LINT
+# --------------------
+
 ruff-lint:
   stage: lint
   script:
-    - '& "$env:PYTHON_EXE" -m pip install ruff --quiet'
     - '& "$env:PYTHON_EXE" -m ruff check .'
 
 ruff-format:
   stage: lint
   script:
-    - '& "$env:PYTHON_EXE" -m pip install ruff --quiet'
     - '& "$env:PYTHON_EXE" -m ruff format --check .'
+
+mypy-check:
+  stage: lint
+  script:
+    - '& "$env:PYTHON_EXE" -m mypy ai tests --ignore-missing-imports'
+  allow_failure: true
+
+# --------------------
+# SECURITY
+# --------------------
 
 bandit-scan:
   stage: security
   script:
-    - '& "$env:PYTHON_EXE" -m pip install bandit --quiet'
-    - '& "$env:PYTHON_EXE" -m bandit -r ai -ll'
+    - '& "$env:PYTHON_EXE" -m bandit -r ai'
+  allow_failure: false
 
 pip-audit:
   stage: security
   script:
-    - '& "$env:PYTHON_EXE" -m pip install pip-audit --quiet'
-    - '& "$env:PYTHON_EXE" -m pip_audit'
+    - '& "$env:PYTHON_EXE" -m pip_audit -r requirements.txt'
   allow_failure: true
+
+# --------------------
+# AUDIT
+# --------------------
 
 license-check:
   stage: audit
   script:
-    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''LICENSE''), ''LICENSE missing''; print(''LICENSE found'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''LICENSE'').exists(); print(''LICENSE OK'')"'
 
 readme-check:
   stage: audit
   script:
-    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''README.md''), ''README missing''; print(''README found'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''README.md'').exists(); print(''README OK'')"'
+
+contributing-check:
+  stage: audit
+  script:
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CONTRIBUTING.md'').exists(); print(''CONTRIBUTING OK'')"'
+
+changelog-check:
+  stage: audit
+  script:
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''CHANGELOG.md'').exists(); print(''CHANGELOG OK'')"'
+
+security-doc-check:
+  stage: audit
+  script:
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SECURITY.md'').exists(); print(''SECURITY OK'')"'
 
 spec-check:
   stage: audit
   script:
-    - '& "$env:PYTHON_EXE" -c "import os; assert os.path.isfile(''SPEC.md''), ''SPEC missing''; print(''SPEC found'')"'
+    - '& "$env:PYTHON_EXE" -c "import pathlib; assert pathlib.Path(''SPEC.md'').exists(); print(''SPEC OK'')"'
+
+# --------------------
+# TESTS
+# --------------------
 
 unit-tests:
   stage: test
   script:
-    - '& "$env:PYTHON_EXE" -m pip install pytest pandas scikit-learn pillow joblib pydantic pytesseract --quiet'
-    - '& "$env:PYTHON_EXE" -m pytest tests/ -v --tb=short'
-    
+    - '& "$env:PYTHON_EXE" -m pytest -v'

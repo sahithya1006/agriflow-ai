@@ -1,11 +1,11 @@
-<<<<<<< requirements.txt
 pandas
 scikit-learn
+joblib
 pydantic
 pytesseract
 pillow
 pytest
-streamlit
-pandas
-joblib
-
+ruff
+mypy
+bandit
+pip-audit
