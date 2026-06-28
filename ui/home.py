@@ -121,7 +121,7 @@ features = [
     ("🧾", "Bill Scanner", "Scan fertilizer bills using OCR technology"),
     ("📊", "Farm Dashboard", "Track all predictions and history locally"),
 ]
-for col, (icon, title, desc) in zip([col1, col2, col3, col4], features):
+for col, (icon, title, desc) in zip([col1, col2, col3, col4], features, strict=False):
     with col:
         st.markdown(f"""
         <div class="feature-card">
@@ -152,7 +152,7 @@ steps = [
     ("3", "🔍 Get AI Advice", "Instant diagnosis and recommendation"),
     ("4", "💾 Save History", "All data saved locally to SQLite"),
 ]
-for col, (num, title, desc) in zip([col1, col2, col3, col4], steps):
+for col, (num, title, desc) in zip([col1, col2, col3, col4], steps, strict=False):
     with col:
         st.markdown(f"""
         <div class="step-card">
