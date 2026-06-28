@@ -3,23 +3,16 @@ from database.db import init_db
 
 init_db()
 
-st.set_page_config(
-    page_title="AgriFlow AI",
-    page_icon="🌾",
-    layout="wide"
-)
+st.set_page_config(page_title="AgriFlow AI", page_icon="🌾", layout="wide")
 
 with st.sidebar:
     st.title("🌾 AgriFlow AI")
     st.caption("Offline Farm Assistant")
     st.markdown("---")
-    choice = st.radio("Navigate", [
-        "🏠 Home",
-        "❓ Ask Question",
-        "📷 Upload Image",
-        "📊 Dashboard",
-        "📄 Reports"
-    ])
+    choice = st.radio(
+        "Navigate",
+        ["🏠 Home", "❓ Ask Question", "📷 Upload Image", "📊 Dashboard", "📄 Reports"],
+    )
     st.markdown("---")
     st.success("● Running offline")
     st.caption("CPU only · No cloud · SQLite")

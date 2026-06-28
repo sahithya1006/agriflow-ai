@@ -50,14 +50,19 @@ def init_db():
     conn.close()
 
 
-def save_prediction(input_type, crop, disease, severity, recommendation, confidence, raw_json):
+def save_prediction(
+    input_type, crop, disease, severity, recommendation, confidence, raw_json
+):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO predictions
         (input_type, crop, disease, severity, recommendation, confidence, raw_json)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (input_type, crop, disease, severity, recommendation, confidence, raw_json))
+    """,
+        (input_type, crop, disease, severity, recommendation, confidence, raw_json),
+    )
     conn.commit()
     conn.close()
 
