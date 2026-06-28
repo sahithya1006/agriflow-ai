@@ -113,7 +113,7 @@ if "upload_result" in st.session_state:
     col1, col2, col3 = st.columns(3)
     col1.metric("🌿 Crop", result["crop"])
     col2.metric("🦠 Disease", result["disease"])
-    col3.metric("📊 Confidence", f"{result['confidence']*100:.0f}%")
+    col3.metric("📊 Confidence", f"{result['confidence'] * 100:.0f}%")
 
     if result.get("severity") == "High":
         st.error(f"⚠️ Severity: {result['severity']}")

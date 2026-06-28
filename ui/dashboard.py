@@ -91,7 +91,7 @@ else:
         st.markdown(
             f"""
         <div class="stat-card">
-            <div class="stat-num" style="color:#e65100;">🌿 {df['Crop'].nunique()}</div>
+            <div class="stat-num" style="color:#e65100;">🌿 {df["Crop"].nunique()}</div>
             <div class="stat-label">Unique Crops</div>
         </div>
         """,
@@ -153,7 +153,9 @@ else:
             "Confidence",
         ]
     ].copy()
-    display_df["Confidence"] = display_df["Confidence"].apply(lambda x: f"{x*100:.0f}%")
+    display_df["Confidence"] = display_df["Confidence"].apply(
+        lambda x: f"{x * 100:.0f}%"
+    )
 
     st.dataframe(
         display_df,
