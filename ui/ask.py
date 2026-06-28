@@ -22,92 +22,100 @@ lang = st.selectbox(
     format_func=lambda x: x[0],
 )
 
+st.markdown("#### 🎙️ Voice Input")
+st.caption("Click the button, speak, then copy the text into the box below")
+
 components.html(
     f"""
 <!DOCTYPE html>
 <html>
-<body style="background:transparent;margin:0;padding:0;">
+<body style="margin:0;padding:0;font-family:sans-serif;">
 
 <button id="micBtn" onclick="startSpeech()"
     style="background:#2e7d32;color:white;border:none;padding:12px 24px;
-    border-radius:8px;cursor:pointer;font-size:16px;width:100%;">
-    🎙️ Click here to Speak
+    border-radius:8px;cursor:pointer;font-size:16px;width:100%;margin-bottom:8px;">
+    🎙️ Click to Speak
 </button>
 
-<p id="status" style="color:gray;font-size:13px;margin-top:8px;"></p>
+<div id="status"
+    style="color:#555;font-size:13px;margin-bottom:8px;min-height:20px;">
+    Press the button and speak
+</div>
 
-<textarea id="result" rows="3"
-    style="width:100%;margin-top:8px;padding:10px;border-radius:8px;
-    border:1px solid #ccc;font-size:14px;"
-    placeholder="Your speech will appear here...">
-</textarea>
+<div id="result-box"
+    style="background:#f1f8e9;border:2px solid #2e7d32;border-radius:8px;
+    padding:12px;font-size:15px;min-height:50px;margin-bottom:8px;
+    color:#1b5e20;font-weight:500;word-wrap:break-word;">
+    Your speech will appear here
+</div>
 
-<button onclick="sendText()"
-    style="margin-top:8px;background:#1565c0;color:white;border:none;
-    padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;">
-    ✅ Use this text
-</button>
+<div style="font-size:12px;color:#777;margin-bottom:4px;">
+    👆 Copy the text above and paste it in the box below in Streamlit
+</div>
 
 <script>
-var recognition;
-
 function startSpeech() {{
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
-        document.getElementById('status').innerText = 'Please use Chrome browser for voice input.';
+        document.getElementById('status').innerText = '❌ Use Chrome browser for voice.';
+        document.getElementById('status').style.color = 'red';
         return;
     }}
 
-    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = '{lang[1]}';
     recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
 
-    document.getElementById('micBtn').innerText = '🔴 Recording... Speak now';
+    document.getElementById('micBtn').innerText = '🔴 Listening... Speak now';
     document.getElementById('micBtn').style.background = '#c62828';
-    document.getElementById('status').innerText = 'Listening...';
+    document.getElementById('status').innerText = '🎤 Listening... speak clearly';
+    document.getElementById('status').style.color = '#c62828';
+    document.getElementById('result-box').innerText = '...';
 
     recognition.start();
 
     recognition.onresult = function(event) {{
-        var transcript = event.results[0][0].transcript;
-        document.getElementById('result').value = transcript;
-        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
-        document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = 'Done! Click Use this text.';
-    }};
-
-    recognition.onerror = function(event) {{
-        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
-        document.getElementById('micBtn').style.background = '#2e7d32';
-        document.getElementById('status').innerText = 'Error: ' + event.error + '. Try again.';
+        var interim = '';
+        var final = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {{
+            if (event.results[i].isFinal) {{
+                final += event.results[i][0].transcript;
+            }} else {{
+                interim += event.results[i][0].transcript;
+            }}
+        }}
+        document.getElementById('result-box').innerText = final || interim;
     }};
 
     recognition.onend = function() {{
-        document.getElementById('micBtn').innerText = '🎙️ Click here to Speak';
+        document.getElementById('micBtn').innerText = '🎙️ Click to Speak again';
         document.getElementById('micBtn').style.background = '#2e7d32';
+        document.getElementById('status').innerText = '✅ Done! Copy the text above into the box below';
+        document.getElementById('status').style.color = '#2e7d32';
     }};
-}}
 
-function sendText() {{
-    var text = document.getElementById('result').value;
-    if (text) {{
-        window.parent.postMessage({{type: 'streamlit:setComponentValue', value: text}}, '*');
-    }}
+    recognition.onerror = function(event) {{
+        document.getElementById('micBtn').innerText = '🎙️ Click to Speak';
+        document.getElementById('micBtn').style.background = '#2e7d32';
+        document.getElementById('status').innerText = '❌ Error: ' + event.error + '. Try again.';
+        document.getElementById('status').style.color = 'red';
+    }};
 }}
 </script>
 </body>
 </html>
 """,
-    height=280,
+    height=220,
 )
 
 symptoms = st.text_area(
-    "Or type your problem here", placeholder="Spoken text or type manually here"
+    "Type or paste your problem here",
+    placeholder="Speak using the mic above, then paste the text here",
 )
 
 if st.button("🔍 Get advice"):
     if not symptoms:
-        st.warning("Please describe your problem or speak first.")
+        st.warning("Please describe your problem first.")
     else:
         with st.spinner("Running AI..."):
             result = {
