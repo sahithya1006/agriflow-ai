@@ -27,7 +27,7 @@ The app predicts the disease, recommends fertilizer, and saves everything locall
 
 ## How to run
 ```bash
-git clone <repo-url>
+git clone <https://code.swecha.org/jashwitha_210/agriflow-ai.git>
 cd agriflow-ai
 pip install -r requirements.txt
 streamlit run app.py
