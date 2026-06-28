@@ -16,4 +16,3 @@ def test_generate_prediction_json():
     assert result["issue_type"] == "Disease"
     assert result["prediction"] == "Early Blight"
     assert result["confidence"] == 0.94
-    

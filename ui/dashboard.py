@@ -9,10 +9,20 @@ rows = get_all_predictions()
 if not rows:
     st.info("No predictions yet. Ask a question or upload an image to get started.")
 else:
-    df = pd.DataFrame(rows, columns=[
-        "ID", "Input Type", "Crop", "Disease",
-        "Severity", "Recommendation", "Confidence", "JSON", "Created At"
-    ])
+    df = pd.DataFrame(
+        rows,
+        columns=[
+            "ID",
+            "Input Type",
+            "Crop",
+            "Disease",
+            "Severity",
+            "Recommendation",
+            "Confidence",
+            "JSON",
+            "Created At",
+        ],
+    )
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Total predictions", len(df))
@@ -22,8 +32,17 @@ else:
     st.markdown("---")
     st.subheader("Recent predictions")
     st.dataframe(
-        df[["Created At", "Crop", "Disease", "Severity", "Recommendation", "Confidence"]],
-        use_container_width=True
+        df[
+            [
+                "Created At",
+                "Crop",
+                "Disease",
+                "Severity",
+                "Recommendation",
+                "Confidence",
+            ]
+        ],
+        use_container_width=True,
     )
 
     st.subheader("Disease breakdown")
